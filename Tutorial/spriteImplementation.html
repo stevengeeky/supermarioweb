@@ -1,0 +1,326 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Untitled 1</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+.auto-style2 {
+	text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<p class="auto-style1">Implementing A Custom Sprite into SMW</p>
+<p class="auto-style2">So you want to create your own sprite?&nbsp; You have the 
+functionality in mind or maybe you just want to get into the subject of what 
+your sprite is going to do and/or look like, but you are at a loss of thought of 
+where to get started.</p>
+<p class="auto-style2">Unsurprisingly, the implementation of a custom sprite 
+will require some knowledge of JavaScript.&nbsp; It is advised to store any 
+similar custom sprites you make within one "sprite pack" (just a javascript 
+file).&nbsp; All sprites made should be appended on to the SPRITES object.</p>
+<p class="auto-style2">To get started, you'll need to know the basic outline or 
+"skeleton" of a sprite.&nbsp; Nearly every sprite is going to essentially 
+include:<br />
+&nbsp;&nbsp;&nbsp; An initialization (for loading your sprite's texture, and 
+setting certain variables that your sprite will possess every time)<br />
+&nbsp;&nbsp;&nbsp; A function that is called every frame and updates different 
+aspects of the sprite<br />
+&nbsp;&nbsp;&nbsp; Graphics based upon different events<br />
+&nbsp;&nbsp;&nbsp; Variables specific to that sprite (for timers, effects, etc.)<br />
+&nbsp;&nbsp;&nbsp; A function that handles collision between your sprite and 
+with blocks or other sprites</p>
+<p class="auto-style2">Let's make a new sprite called thwump.&nbsp; It is going 
+to have a thwimp graphic from the defaultSprites sprite pack, and bounce the 
+player upwards when he lands on top of it.&nbsp; We will have it be responsive 
+to gravity, and interact with blocks, but not other sprites (besides the 
+player).</p>
+<p class="auto-style2">To start, we'll append our sprite on to the SPRITES 
+object, so that the editor can detect its existence and append it onto the list 
+of available sprites.<br />
+<em>SPRITES.thwump = function(op)<br />
+{<br />
+var s = new Sprite(op);<br />
+// (More stuff to do here)<br />
+<br />
+return s; // Return a new instance of our sprite<br />
+}</em></p>
+<p class="auto-style2">We'll assign it a couple variables that every instance of 
+it will have...<br />
+<em>s.width = 32;<br />
+s.height = 32;<br />
+s.type = "thwump";</em></p>
+<p class="auto-style2">The type of your sprite MUST match the name of the sprite 
+within the SPRITES object.&nbsp; Now, we need to add a collision box for the 
+sprite.&nbsp; This is done through a Geometry.&nbsp; Within a Geometry is the x 
+and y of where to start the collision rectangle, and the width and height of 
+that rectangle, all relative to the sprite.&nbsp; In this case, and in most 
+cases, this is going to surround the entirety of the sprite's graphic...<br />
+<em>s.geometry = new Geometry({ x:0, y:0, width:s.width, height:s.height });</em></p>
+<p class="auto-style2">From here, we'll add in variables that this sprite will 
+possess.&nbsp; Variables that are needed in this case include a a move speed, a 
+fall speed, and a kind of terminal velocity for the fall speed that caps it at a 
+certain value.&nbsp; By relative establishments, my fall speed will be .4, my 
+terminal velocity for my fall speed will be 9, and my move speed will be .5.<br />
+<em>s.speed = .5;<br />
+s.fallSpeed = .4;<br />
+s.fallCap = 9;</em></p>
+<p class="auto-style2">From here, we'll need to focus on the nearly most 
+important thing within the sprite: graphics.&nbsp; Our sprite is going to have a 
+fixed graphic, so it won't be too tricky to implement.<br />
+The only twisted bit is initializing the texture itself.&nbsp; The texture pack 
+you are instantiating could have already been made.&nbsp; A function included 
+within the engine called <em>getTexturePack</em> takes in a file path 
+(relative), and returns either null or the texture pack within the game with 
+that file path.&nbsp; So, we need to check to see if the texture pack (or sprite 
+pack, however you want to label it) with our graphic exists, and set our 
+sprite's texture to use either that texture pack or create that texture pack if 
+it does not exist yet.<br />
+The defaultSprites sprite pack mainly uses the file <em>Packs/defaultSprites.png</em> 
+for its graphics, and that is the file containing the thwimp graphic, so we'll 
+do just that with that file name in mind.</p>
+<p class="auto-style2"><em>var tp = getTexturePack("Packs/defaultSprites.png");<br />
+if (tp)<br />
+&nbsp;&nbsp;&nbsp; s.texture = new Texture({ type:"texture", texturePack:tp, 
+animation:[] });<br />
+else<br />
+{<br />
+&nbsp;&nbsp;&nbsp; tp = game.texturePacks.add(new TexturePack({ 
+source:"Packs/defaultSprites.png", callback:function(){<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.texture = new Texture({ 
+type:"texture", texturePack:tp, animation:[] });<br />
+&nbsp;&nbsp;&nbsp; } }));<br />
+}</em></p>
+<p class="auto-style2">You'll notice that in both cases of creating the texture, 
+we leave the animation (that is the graphics reference in the form of <em>x1, 
+y1, w1, h1[, x2, y2, w2, h2, ...]</em>) as blank.&nbsp; We will set this within 
+the sprite's update function.<br />
+For nearly any sprite, we'll need to have a stored list of its graphics bases 
+upon different scenarios (example: mario's walking animation if he is walking, 
+jumping animation when jumping, etc).&nbsp; I'll store all of these different 
+animations (though in this case, there's only one graphic) within an object that 
+I will call poses.<br />
+<em>var poses = {<br />
+&nbsp;&nbsp;&nbsp; fixed: []<br />
+};</em></p>
+<p class="auto-style2">Now we'll need to know where this graphic is located 
+within the file, and the dimensions of it.&nbsp; To do that, we'll open up the 
+image containing the graphic for our sprite, and spot these attributes within 
+the image editor (I use Paint.NET).</p>
+<p class="auto-style2">
+<img alt="" height="411" src="Images/6.png" width="831" /></p>
+<p class="auto-style2">The two circled bits are what we will use for our 
+animation array values:</p>
+<p class="auto-style2"><em>var poses = {<br />
+&nbsp;&nbsp;&nbsp; fixed: [514, 800, 32, 32]<br />
+};</em></p>
+<p class="auto-style2">Now we just need to attach this graphic to our sprite so 
+that we can view the results!&nbsp; Within our sprite's update function, call a 
+new function, called <em>doAnimation</em>.&nbsp; This will handle presumably the 
+animation setting of our sprite.<br />
+<em>function doAnimation()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; <br />
+}<br />
+s.update = function()<br />
+{<br />
+&nbsp;&nbsp;&nbsp; doAnimation();<br />
+}</em></p>
+<p class="auto-style2">In the <em>doAnimation</em> function, we can call a 
+function which is part of sprites themselves labeled as <em>setAnimation</em>, 
+and this takes in an object as a parameter consisting of options pertaining to 
+setting the animation of a sprite.<br />
+Within this object can be:<br />
+&nbsp;&nbsp;&nbsp; <em>flipX</em> - Whether or not to flip the x graphic on the 
+sprite.&nbsp; Leaving this as null or not setting it will cause the sprite to 
+remain with its current flipped settings.<br />
+&nbsp;&nbsp;&nbsp; <em>flipY</em> - Same as flipX, but acts vertically instead 
+of horizontally<br />
+&nbsp;&nbsp;&nbsp; <em>anim</em> - This is important for actually drawing the 
+sprite.&nbsp; This will set the sprite's animation to the one passed in (hence 
+the function name)</p>
+<p class="auto-style2">I like to create the options separate from calling the 
+function, just in case I have to set it optionally with multiple graphics.<br />
+<em>var op = { anim:poses.fixed };<br />
+s.setAnimation(op);</em></p>
+<p class="auto-style2">Now, we should be able to go into our editor (assuming 
+you've included the file with your sprite as part of the editor), and see that 
+in fact our sprite is available in the list of sprites we are able to add.&nbsp; 
+And, we can add it and view the thwump as it is right now; just a graphic.&nbsp; 
+Still pretty sweet though!</p>
+<p class="auto-style2">
+<img alt="" height="300" src="Images/7.png" width="426" /></p>
+<p class="auto-style2">If you are wondering what your code should look like 
+(even if what you have right now works for you), you can check out the sample
+<a href="Code/drawn.js">here</a>.</p>
+<p class="auto-style2">So, it's time to actually add in some interaction for 
+this thwump!&nbsp; I put together a small sample level in order to show off our 
+sprite once it is finished:</p>
+<p class="auto-style2">
+<img alt="" height="478" src="Images/8.png" width="638" /><br />
+You can find the source file code to this level by clicking
+<a href="Code/sample.txt">here</a>.</p>
+<p class="auto-style2">I am going to skip the walkthrough on making this level 
+playable on the main game since it is in the other tutorial on using the engine 
+and you should already know how to do it or should be able to look there if you 
+do not.<br />
+You should be able to just walk right through the thwump as if it were not even 
+there.&nbsp; However, that will change soon.&nbsp; It's time to add in sprite 
+movement and interaction.</p>
+<p class="auto-style2">So, let's put some velocity on this sprite and get it to 
+move.<br />
+In its initialization (after all of the sprite's variables are being set), put:<br />
+<em>s.vx = -s.speed;<br />
+</em>This will cause its velocity to be the speed we set earlier.<br />
+Reload your game.&nbsp; The sprite should be slowly moving to the left.</p>
+<p class="auto-style2">So, it's time to add in collision.&nbsp; All blocks that 
+the sprite collides with are passed through to the function <em>collided</em>, 
+built in to each sprite.<br />
+<em>s.collided = function(b)<br />
+{<br />
+&nbsp;&nbsp;&nbsp; // b is the block s has collided with<br />
+}</em></p>
+<p class="auto-style2">We can retrieve specific information about the type of 
+collision that has occurred by calling the function (not built in to each 
+sprite) <em>getCollisionInfo</em>.&nbsp; It takes in two parameters: the sprite 
+to look at and the sprite to see how the viewed sprite has hit it.&nbsp; It 
+returns a set of variables within a resultant object: top, bottom, left, right; 
+corresponding to the collision on those specific areas.<br />
+Since we want our thwump to interact fully with solid faces, we'll need to 
+implement collision actions for type 'ledge' and type 'solid'.&nbsp; For ledge 
+and solid interaction, only ground collision should be implemented.&nbsp; And, 
+in addition for solid, ceiling and wall collision should also be added.</p>
+<p class="auto-style2">Now, when implementing a specific collision course of 
+action, you must keep in mind that each is very similar.&nbsp; First, we need to 
+place the sprite just before where its collision point is (i.e. a sprite 
+colliding on the left side of the wall should be placed just a tad left of the 
+left side of the wall).&nbsp; Then (or before then, it does not really matter), 
+we need to clear and/or set accordingly the velocity relating to that specific 
+collision.&nbsp; A sprite colliding with a wall should have its x velocity set 
+to zero or flipped in our case (since our sprite is remaining in constant 
+motion).&nbsp; Finally, any flags relating to that specific collision should be 
+set.&nbsp; The onGround flag for the player for example is set while he in on 
+the ground.&nbsp; All flags relating to a sprite should be cleared at the end of 
+its update code.</p>
+<p class="auto-style2">So, with all of that in mind, here is the collision code 
+that we need to implement:</p>
+<p class="auto-style2"><em>var inf = getCollisionInfo(s, b);<br />
+if (b.type.replace(/solid|ledge/g, "") == "")<br />
+</em>{<em><br />
+&nbsp;&nbsp;&nbsp; if (inf.top)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.vy = s.fallSpeed;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.onGround = true;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.y = b.y - s.height;<br />
+&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; <br />
+&nbsp;&nbsp;&nbsp; if (b.type == "solid")<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (inf.bottom)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.vy = 
+s.fallSpeed;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.y = b.y + 
+b.height + .01;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (inf.left)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.vx = 
+-s.speed;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.x = b.x - 
+s.width - .01;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (inf.right)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.vx = 
+s.speed;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; s.x = b.x + 
+b.width + .01;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+</em>}</p>
+<p class="auto-style2">Since we have implemented ground collision and response, 
+we also need to implement gravity.&nbsp; Within your sprite's update function, 
+make a call to a new function, and call that new function <em>doLerp</em>.&nbsp; 
+Here, we will add our sprite's fall speed to its y velocity, and if its y 
+velocity is greater than the terminal y velocity, we will cap it.<br />
+<em>s.vy += s.fallSpeed;<br />
+if (s.vy &gt; s.fallCap)<br />
+&nbsp;&nbsp;&nbsp; s.vy = s.fallCap;</em></p>
+<p class="auto-style2">Your sprite code should now look like
+<a href="Code/basicInteraction.js">this</a>.<br />
+Run your game again, and your sprite should collide and interact with the ground 
+and walls!&nbsp; It should also switch directions when it hits the green and 
+yellow pipes.&nbsp; If it were to somehow hit a ceiling (given negative y 
+velocity), it would interact with that as well!&nbsp; Our sprite code is working 
+beautifully.</p>
+<p class="auto-style2">Lastly, it is time to implement the sprite's interaction 
+with the player.&nbsp; Unlike the collision code (though the collision code is 
+not that tricky to understand), this concept is pretty straight forward.&nbsp; 
+First, we want to check sprite collisions with our sprite.&nbsp; Then, we want 
+to see if the sprite that has collided with our sprite is the player.&nbsp; 
+Following that, we want to get the collision info between the player and our 
+sprite.&nbsp; If the player has collided with the top of our sprite, then we 
+will give it some negative y velocity as a boost upwards.</p>
+<p class="auto-style2">Now, the only "tricky" part about this is the fact that 
+checks for sprite collision between an instantiated sprite and all other sprites 
+are not automatic, so we'll have to do it ourselves.&nbsp; However, this does 
+not mean that we have to implement the functionality of the checking ourselves.&nbsp; 
+Calling the function <em>doSpriteCollision</em> which takes in the parameter of 
+the sprite you want to check collisions for automatically searches for and calls 
+the sprite's <em>collided</em> function with the sprite it has collided with.&nbsp; 
+How do we know it is a sprite?&nbsp; Well, it calls the <em>collided</em> 
+function with another parameter, set to true when it is a sprite.</p>
+<p class="auto-style2">Once we know that it is a sprite that is being collided 
+with, and we've checked to see if it is the player, we need to get the collision 
+info between the player and block.&nbsp; Why?&nbsp; Collision checks depend on 
+velocity of sprite A, meaning the collision between sprite B and sprite A 
+respectively is going to return different information than the collision info 
+between sprite A and sprite B.</p>
+<p class="auto-style2"><em>s.collided = function(b, isSprite)<br />
+</em>{<em><br />
+&nbsp;&nbsp;&nbsp; var inf = getCollisionInfo(s, b);<br />
+&nbsp;&nbsp;&nbsp; if (isSprite)<br />
+&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; var binf = getCollisionInfo(b, s);<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; switch (b.type)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case 
+"player":<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+if (binf.top)<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+{<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+// Yet to do: Give the player some velocity in y<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+}<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+break;<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br />
+&nbsp;&nbsp;&nbsp; }<br />
+else<br />
+</em>{<em><br />
+&nbsp;&nbsp;&nbsp; // [Other collision code we had to check between our sprite 
+and a block]<br />
+</em>}</p>
+<p class="auto-style2">The only thing left to do is set the player's y velocity 
+to a value after all of this checking is performed.<br />
+<em>b.vy = -12</em></p>
+<p class="auto-style2">I used -12, though you may set it to any value you like.</p>
+<p class="auto-style2">Done!&nbsp; That is our resulting sprite!&nbsp; Your 
+finalized code should look something like <a href="Code/finalized.js">this</a>.</p>
+<p class="auto-style2">So that's essentially it.&nbsp; Just apply this sprite 
+creation logic to any and every sprite that you have in mind to make.&nbsp; The 
+sky is the limit!</p>
+
+</body>
+
+</html>

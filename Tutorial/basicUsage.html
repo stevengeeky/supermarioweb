@@ -1,0 +1,147 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta content="en-us" http-equiv="Content-Language" />
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type" />
+<title>Untitled 1</title>
+<style type="text/css">
+.auto-style1 {
+	text-align: center;
+}
+.auto-style2 {
+	text-align: left;
+}
+</style>
+</head>
+
+<body>
+
+<p class="auto-style1">SMW (Super Mario Web) Instructions for Building a Game</p>
+<p class="auto-style2">Super Mario Web is a utility created in order to play 
+mario within your browser, without the need of the web at all.</p>
+<p class="auto-style2">Requirements:<br />
+&nbsp;&nbsp;&nbsp; Latest version of Firefox (Would mention Chrome/Opera, but 
+neither will allow Ajax Requests on a local device)<br />
+&nbsp;&nbsp;&nbsp; Programming knowledge for extensions (such as sprites or 
+engine abilities), and for actually implementing the level into your game</p>
+<p class="auto-style2">And that's it!&nbsp; Your computer will not need to be a 
+huge wielder of graphics power, though larger levels within your game may put a 
+strain on your CPU (Not entirely sure that the built-in 2D canvas uses the 
+graphics card at all).</p>
+<p class="auto-style2">To start off, open up <strong>edit.html</strong>, the 
+central location for creating a new level within your game.&nbsp; You will be 
+presented with two main windows, along with a link and a few buttons to the top 
+left of the document.</p>
+<p class="auto-style2"><img alt="" height="95" src="Images/1.png" width="467" /></p>
+<p class="auto-style2">Here is a walkthrough of what each button does and how 
+exactly to use each:<br />
+&nbsp;&nbsp;&nbsp; Change Background - Changes the background of the game to a 
+given one (no extension required; assumed .png file).&nbsp; Note that the 
+filename you type will be assumed to be in the folder <em>Backgrounds</em>.<br />
+&nbsp;&nbsp;&nbsp; Change/Load Music - Adds music to the game (music presumably 
+is assumed to be within the <em>Music</em> folder).&nbsp; No extension required.&nbsp; 
+A very important note is that only a few file types work, including .mp3.<br />
+&nbsp;&nbsp;&nbsp; Toggle Level/Focus Music - You'll have noticed when you 
+opened up the file that music is already playing.&nbsp; <strong>This is not 
+inserted into the game.&nbsp; It is for pure focus only</strong>.&nbsp; Who 
+wants to work in dull silence?&nbsp; Anyways, this button toggles between the 
+focus music and the music you have inserted into the level.<br />
+&nbsp;&nbsp;&nbsp; Pause All Music - In case you do not want to listen to any 
+music, just click this button, and it will get rid of it for you.&nbsp; Adding a 
+music track to your game will automatically cause it to play, though you can use 
+this button again to quit listening to it.</p>
+<p class="auto-style2">On to the actual editing of the game itself, if you look 
+below the button options at the top left, you will see the tile select window, 
+and the tile select option drop down.</p>
+<p class="auto-style2">
+<img alt="" height="211" src="Images/2.png" width="506" /></p>
+<p class="auto-style2">The select element allows you to switch between which 
+texture packs implemented into the game (only one is inserted as of now, an 
+early entrance into the game engine project).&nbsp; Here, you can select a tile 
+to use to paste into your game.&nbsp; Rightclicking on multiple tiles will 
+append them into one animation as part of the texture of the tile you are 
+intending to paste.&nbsp; Something else important that you should note and 
+modify accordingly is the select by the aforementioned buttons:</p>
+<p class="auto-style2"><img alt="" height="24" src="Images/3.png" width="202" /></p>
+<p class="auto-style2">This is the type selector.&nbsp; Whatever tile you paste 
+down next (unless it is something like a direct copy, which we'll get to later 
+on), will have this tile type.&nbsp; <strong>This is very important for the 
+implementation of a player and for other sprites.</strong>&nbsp; It instructs 
+sprites of what routine to follow based on what type of tile it has hit.&nbsp; 
+As of now the three tile types implemented are blank, ledge, and solid; all of 
+which are pretty self explanatory.<br />
+In order to drag around the camera for the tile window (for larger sprite packs 
+that extend beyond the size of the tile selector window), hold down space, 
+click, and drag to pan the camera around.</p>
+<p class="auto-style2">On to the good stuff: the game editor window.&nbsp; 
+There's a lot of stuff to go over here already even though this editor is only 
+two days in the making so far.&nbsp; </p>
+<p class="auto-style2">
+<img alt="" height="480" src="Images/4.png" width="640" /></p>
+<p class="auto-style2">So you may be asking yourself, "What the hell is this?"<br />
+Well, this is the game window.&nbsp; It doesn't look like much, but that's 
+because we haven't added anything yet.&nbsp; The woven thread background is just 
+there as a "null indicator".&nbsp; The lightblue lines separate the the 
+quadrants that make up a cartesian-like system that is the coordinates in which 
+every sprite (including blocks) use to map into the game.&nbsp; Where they 
+intersect is (0, 0), and going counterclockwise from the top right quadrant is 
+(positive, negative), (negative, negative), (negative, positive), (positive, 
+positive).<br />
+What is the slim red border that is a bit hinted you ask?&nbsp; Well, that 
+border represents the boundedness on the camera when the level is to be played 
+as part of an actual game.</p>
+<p class="auto-style2">Similarly to the selector window, you can hold down space 
+and click and drag to move the camera around (showing off the parallax effect 
+that is part of the new engine).&nbsp; You can also hold down 's' and click and 
+drag vertically in order to change the scale (This is part of the editor only.&nbsp; 
+There is no scaling within the actual game).&nbsp; The parallax interval will 
+change according to scale, so you may notice a sort of diagonal scrolling effect 
+of the background when zooming.</p>
+<p class="auto-style2">In order to change the bounded area on the camera, click 
+and drag the left, right, top, or bottom of the red border to new areas.&nbsp; 
+The editor will not let you have a bounded area with a lesser vertical and/or 
+horizontal distance than that of the screen display.</p>
+<p class="auto-style2">To paste in a tile from the tile selector window into the 
+game, right click in order to paste in a single tile, or hold down the mouse and 
+drag the mouse over the rectangular area that you would like to paste tiles 
+within to put in multiple of the same one at once.<br />
+Already instantiated tiles can be selected with a left click, and dragged 
+around, or repasted with another right click.<br />
+You can select more than one block at a time by holding down control and 
+clicking multiple at once, or by clicking and dragging over the rectangular area 
+that includes the tiles you would like to select.&nbsp; Once selected, tiles 
+and/or sprites can be left clicked again and dragged around to new locations.</p>
+<p class="auto-style2">After you've made your game (can't be too awesome at this 
+early point on, but hey, it's still gotta be great!), it's time to export it to 
+be played!&nbsp; Click on the 'download level' button in order to export the 
+content of your level into a specific format similar to that of .obj.&nbsp; You 
+can drag this file into the editor window to open it for modification in case 
+you happen to close out of the page and reopen it.</p>
+<p class="auto-style2"><img alt="" height="29" src="Images/5.png" width="128" /></p>
+<p class="auto-style2">Now comes the bit that requires a tad amount of 
+programming knowledge (though implementation of other things will require more 
+than just that).&nbsp; In the file <em>main.js</em>, you will need to load that 
+file into the game via the <em>openLevel</em> method.<br />
+Though later on in this tutorial (once more stuff is implemented) I will be 
+going on the basis that you know a thing or two about JavaScript, for now, I'll 
+assume you're an absolute noob who has never seen anything like it before.<br />
+In between the two curly braces where it says <em>loaded(){ ... }</em>, we will 
+load our level.&nbsp; Here, put<br />
+<br />
+openLevel("[nameOfFile]", function(){<br />
+&nbsp;&nbsp;&nbsp; player = Sprite.mario({ x:-31, y:-64, type:"player" });<br />
+&nbsp;&nbsp;&nbsp; game.sprites.add("player", player);<br />
+});<br />
+<br />
+And where it says "[nameOfFile]" you would put "myFile.txt" or whatever you 
+named it, and this has no assumed directory; it only uses the relative directory 
+of where ever you have put the main html file at (called <em>index.html</em>).&nbsp; 
+You could also change the x and y spawn locations of the player here as well, I 
+just used those for example purposes.</p>
+<p class="auto-style2">Now open <em>index.html</em>, and viola!&nbsp; You can 
+play the result of your constructed game!</p>
+
+</body>
+
+</html>

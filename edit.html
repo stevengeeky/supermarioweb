@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>SMW Edit</title>
+
+		<meta charset="utf-8" />
+
+		<!-- Engine -->
+		<script src="JS/core.js"></script>
+		<script src="JS/engine.js"></script>
+		
+		<!-- Sprite Packs -->
+		<script src="JS/defaultTextureMaps.js"></script>
+		<script src="JS/defaultSpritePack.js"></script>
+		<script src="Effects/defaultEffects.js"></script>
+		
+		<!-- Associated Run Code -->
+		<script src="edit.js"></script>
+		
+		<link rel="stylesheet" href="Edit/main.css" />
+	</head>
+
+	<body>
+		<div class="extra">
+			<a href="index.html">SMW Player</a><br />
+			<i>Game</i><br />
+			<button id="bgchange">Change Background</button><br />
+			<button id="changemusic">Change/Load Music</button> <button id="togglemusic">Toggle Music</button><br />
+			Add Sprite of Type: <select id="spritetype"></select> <button id="addsprite">Add</button><br />
+			<button id="player">Compile and Test</button> <button id="dgame">Download</button><br /><br />
+			
+			<i>Chooser</i><br />
+			Texture Pack: <select id="texturePacks"></select><br />
+			<canvas id="chooser"></canvas>
+		</div>
+		
+		<div id="attributes" style="position:fixed;right:0;top:0;width:auto;height:auto;background:linear-gradient(to right, white, lightgray);border-left:1px solid black;border-bottom:1px solid black;padding:3px;text-align:right;">
+			
+		</div>
+	</body>
+</html>
