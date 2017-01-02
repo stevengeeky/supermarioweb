@@ -11,3 +11,5 @@ Arrow Keys - Move
 
 ## Basic Usage
 Check out `/Tutorial/basicUsage.html` to get to know the editor and `/Tutorial/spriteImplementation.html` to learn how to implement your own sprite!
+
+*A JavaScript Project by Steven O'Riley*
